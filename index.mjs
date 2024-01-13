@@ -1,14 +1,18 @@
 import express from "express";
 import fs from "fs";
 import { createServer } from "http";
-import path from "path";
+import fetch from "node-fetch"; 
 
 const app = express();
 
 app.get("/concat", async (req, res) => {
   try {
-    const audio1Response = await fetch(req.query.audio1);
-    const audio2Response = await fetch(req.query.audio2);
+    const audio1Response = await fetch(req.query.audio1, {
+      redirect: "follow",
+    });
+    const audio2Response = await fetch(req.query.audio2, {
+      redirect: "follow",
+    });
 
     if (!audio1Response.ok || !audio2Response.ok) {
       throw new Error("Failed to fetch audio files");
@@ -19,7 +23,7 @@ app.get("/concat", async (req, res) => {
 
     const concatenatedBuffer = Buffer.concat([buffer1, buffer2]);
 
-    const filename = `${Date.now()}.mp3`;
+    const filename = `${Date.now()}.ogg`;
     fs.writeFileSync(
       `./public/${filename}`,
       concatenatedBuffer,
