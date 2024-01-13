@@ -1,28 +1,47 @@
 import express from "express";
-import multer from "multer";
 import fs from "fs";
 import { createServer } from "http";
+import path from "path";
 
-const upload = multer();
 const app = express();
 
-app.post("/concat", upload.any(), async (req, res) => {
-  const buffer1 = req?.files[0].buffer;
-  const buffer2 = req?.files[1].buffer;
-  const concatenatedBuffer = Buffer.concat([buffer1, buffer2]);
+app.get("/concat", async (req, res) => {
+  try {
+    const audio1Response = await fetch(req.query.audio1);
+    const audio2Response = await fetch(req.query.audio2);
 
-  const outputFile = "audio.mp3";
-
-  fs.writeFileSync(outputFile, concatenatedBuffer, "binary", (err) => {
-    if (err) {
-      console.error("error to make audio file:", err);
-    } else {
-      console.log("File created:", outputFile);
+    if (!audio1Response.ok || !audio2Response.ok) {
+      throw new Error("Failed to fetch audio files");
     }
-  });
-  res.setHeader("Content-Type", "audio/mpeg");
-  res.setHeader("Content-Disposition", 'attachment; filename="./audio.mp3"');
-  res.download("audio.mp3");
+
+    const buffer1 = Buffer.from(await audio1Response.arrayBuffer());
+    const buffer2 = Buffer.from(await audio2Response.arrayBuffer());
+
+    const concatenatedBuffer = Buffer.concat([buffer1, buffer2]);
+
+    const filename = `${Date.now()}.mp3`;
+    fs.writeFileSync(
+      `./public/${filename}`,
+      concatenatedBuffer,
+      "binary",
+      (err) => {
+        if (err) {
+          throw new Error("Error creating audio file:", err);
+        }
+        console.log("File created:", `./public/${filename}`);
+      }
+    );
+
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="./${filename}"`
+    );
+    res.download(`./public/${filename}`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error processing audio files");
+  }
 });
 
-createServer(app).listen(process.env.PORT);
+createServer(app).listen(process.env.PORT || 3000);
