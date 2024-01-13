@@ -1,10 +1,16 @@
 {
-  "name": "http-nodejs",
+  "name": "join-audio",
   "version": "1.0.0",
-  "main": "index.js",
-  "author": "Aiden Bai",
-  "license": "MIT",
+  "description": "Api to join two audio files",
+  "main": "index.mjs",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node index.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
   }
 }
